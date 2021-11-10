@@ -4,7 +4,7 @@ import time
 from sr.robot import *
 
 """
-run with:	$ python run.py exercise1.py
+run with:	$ python2 run.py assignment1.py
 """
 
 R = Robot()
