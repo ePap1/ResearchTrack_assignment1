@@ -51,16 +51,23 @@ def find_silver():
 	dist (float): distance to the silver token (-1 if no silver token is detected)
 	rot_y (float): angle between the robot and the silver token (-1 if no silver token is detected)
     """
+    # We only look for the boxes nearby, i.e. which are at a distance of less than range = 1.5
     range = 1.5
     dist=range +1
+	
     for token in R.see():
+	# We only consider the silver boxes in the search area : dist<range but also that are in front of the robot (rot_y in [-90°;90°]) 
         if token.dist < min(range,dist) and -90<token.rot_y<90 and token.info.marker_type is MARKER_TOKEN_SILVER:
+	    # If we found a closer silver boc, we update dist and rot_y with the value of this box
             dist = token.dist
             rot_y = token.rot_y
+	
+    # In case that we haven't found any box, we return negative value for dist because no real box is at a negative distance to the robot.
     if dist==range +1:
         return -1, -1
     else:
-	    return dist, rot_y
+	# Otherwise, we return the caracteristics of the box
+	return dist, rot_y
 
 def orient():
     """ 
@@ -68,15 +75,20 @@ def orient():
     Returns :
     dist (float) : distance to the silver marker if in range, -1 otherwise
     """
+    # To begin with, look for a silver bow in the nearby area using find_silver()
     dist, rot = find_silver()
+    # If a silver box has been found (i.e. dist positive), we want to turn the robot towards it.
     if dist != -1 :
+	# As long as the angle is outside a cetain interval, we turn the robot a little in the right direction
         while not (-a_th <rot< a_th):
             if rot<-a_th :
                 turn(-5, 0.25)
             else:
                 turn(+5, 0.25)
+	    # We now update the value of the angle 
             junk, rot = find_silver()
-            
+		
+    # Finally we return the distance to the silver box (or -1 if none was detected)      
     return dist
 
 def obstacle(range, cone):
@@ -86,13 +98,21 @@ def obstacle(range, cone):
     returns :
     rot (float) : angle between the robot and the closest obstacle
     """
+    # initialisation of dist
     dist = range +1
+
+    # We use the method see() of the robot class to get information on the environment
     for token in R.see():
+	# We then only consider the golden boxes which are in the search area defined by range and cone.
+	# We look for the closest one, and get its distance and angle to the robot. 
         if token.dist < min(range, dist) and -cone<token.rot_y<cone and token.info.marker_type is MARKER_TOKEN_GOLD:
             dist = token.dist
             rot = token.rot_y
+		
+    # If no obstacle was detected in the search area, we return a value which will not be taken otherwise
     if dist==range +1:
 	    return 1000
+    # If an obstacle was in fact detected, we return the angle between it and the robot
     else:
         return rot
 
